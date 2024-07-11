@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace SamMakesCode\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use SamMakesCode\KlaviyoApi\KlaviyoApi;

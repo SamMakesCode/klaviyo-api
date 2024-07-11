@@ -1,12 +1,19 @@
 {
     "name": "sammakescode/klaviyo-api",
-    "description": "A Klaviyo library for PHP actually written by a normal person",
+    "description": "A Klaviyo library for PHP written by a normal person",
+    "keywords": ["klaviyo", "event", "guzzle", "wrapper"],
+    "homepage": "https://github.com/sammakescode/klaviyo-api",
+    "version": "1.0.0",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "SamMakesCode\\KlaviyoApi\\": "src/",
-            "Tests\\": "tests/"
+            "SamMakesCode\\KlaviyoApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SamMakesCode\\Tests\\": "tests/"
         }
     },
     "authors": [

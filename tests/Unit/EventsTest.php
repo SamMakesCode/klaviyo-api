@@ -1,8 +1,7 @@
 <?php
 
-namespace Tests\Unit;
+namespace SamMakesCode\Tests\Unit;
 
-use SamMakesCode\KlaviyoApi\Objects\Event;
 use SamMakesCode\KlaviyoApi\Objects\Metric;
 use SamMakesCode\KlaviyoApi\Objects\Profile;
 

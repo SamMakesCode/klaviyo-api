@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace SamMakesCode\Tests\Unit;
 
 use SamMakesCode\KlaviyoApi\Objects\Profile;
 
