@@ -50,4 +50,19 @@ class ProfilesTest extends CustomTestCase
         $this->assertInstanceOf(Profile::class, $profile);
         $this->assertEquals($phoneNumber, $profile->attributes->phone_number);
     }
+
+    public function testCanCreateOrUpdate()
+    {
+        $variableBit = rand(0, 999999999);
+        $variableBit = str_pad($variableBit,9, '0', STR_PAD_LEFT);
+        $phoneNumber = '+447' . $variableBit;
+
+        $profile = $this->klaviyoApi->profiles()->createOrUpdate([
+            'email' => 'samlitter57@gmail.com',
+            'phone_number' => $phoneNumber,
+        ]);
+
+        $this->assertInstanceOf(Profile::class, $profile);
+        $this->assertEquals($phoneNumber, $profile->attributes->phone_number);
+    }
 }

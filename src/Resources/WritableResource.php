@@ -70,35 +70,4 @@ abstract class WritableResource extends BaseResource
             $objectData,
         );
     }
-
-    public function createOrUpdate(?string $id, array $attributes)
-    {
-        /** @var BaseObject $object */
-        $object = $this->objectName;
-
-        if ($id === null) {
-            $event = $object::empty($attributes);
-        } else {
-            $event = new $object($id, $attributes);
-        }
-
-        $body = json_encode($event->toArray());
-
-        $objectData = $this->unpackResponse(
-            $this->client->post($this->prefix . '/' . $id, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'body' => $body,
-            ])
-        );
-
-        if ($objectData === null) {
-            return null;
-        }
-
-        return $this->populateObject(
-            $objectData,
-        );
-    }
 }
