@@ -3,7 +3,6 @@
     "description": "A Klaviyo library for PHP written by a normal person",
     "keywords": ["klaviyo", "event", "guzzle", "wrapper"],
     "homepage": "https://github.com/sammakescode/klaviyo-api",
-    "version": "1.0.0",
     "type": "library",
     "license": "MIT",
     "autoload": {
