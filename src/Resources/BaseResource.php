@@ -39,6 +39,10 @@ abstract class BaseResource
     {
         $rawBody = $response->getBody()->getContents();
 
+        if (empty($rawBody)) {
+            return null;
+        }
+
         $body = json_decode($rawBody, true);
 
         $data = $body['data'];
