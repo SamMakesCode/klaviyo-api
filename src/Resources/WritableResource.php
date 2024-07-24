@@ -4,6 +4,7 @@ namespace SamMakesCode\KlaviyoApi\Resources;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use SamMakesCode\KlaviyoApi\Exceptions\InvalidRequest;
 use SamMakesCode\KlaviyoApi\Objects\BaseObject;
 
 abstract class WritableResource extends BaseResource
@@ -17,23 +18,26 @@ abstract class WritableResource extends BaseResource
         parent::__construct($client, $objectName, $prefix);
     }
 
-    public function create(array $attributes)
+    public function create(BaseObject $object)
     {
-        /** @var BaseObject $object */
-        $object = $this->objectName;
-
-        $event = $object::empty($attributes);
-
-        $body = json_encode($event->toArray());
-
-        $objectData = $this->unpackResponse(
-            $this->client->post($this->prefix, [
+        try {
+            $response = $this->client->post($this->prefix, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
-                'body' => $body,
-            ]),
-        );
+                'body' => json_encode($object->export(true)),
+            ]);
+        } catch (ClientException $clientException) {
+            if ($clientException->getResponse()->getStatusCode() === 400) {
+                $jsonResponse = json_decode($clientException->getResponse()->getBody()->getContents(), true);
+
+                throw new InvalidRequest('Object creation failed because: "' . $jsonResponse['errors'][0]['detail'] . '"');
+            } else {
+                throw $clientException;
+            }
+        }
+
+        $objectData = $this->unpackResponse($response);
 
         if ($objectData === null) {
             return null;
@@ -44,17 +48,12 @@ abstract class WritableResource extends BaseResource
         );
     }
 
-    public function update(string $id, array $attributes)
+    public function update(BaseObject $object)
     {
-        /** @var BaseObject $object */
-        $object = $this->objectName;
-
-        $event = new $object($id, $attributes);
-
-        $body = json_encode($event->toArray());
+        $body = json_encode($object->export(true));
 
         $objectData = $this->unpackResponse(
-            $this->client->patch($this->prefix . '/' . $id, [
+            $this->client->patch($this->prefix . '/' . $object->getId(), [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],

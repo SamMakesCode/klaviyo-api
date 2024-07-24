@@ -3,48 +3,84 @@
 namespace SamMakesCode\KlaviyoApi\Objects;
 
 use SamMakesCode\KlaviyoApi\Objects\Attributes\BaseAttributes;
+use SamMakesCode\KlaviyoApi\Objects\Relationships\BaseRelationships;
 
-abstract class BaseObject
+abstract class BaseObject implements KlaviyoObject
 {
-    public BaseAttributes $attributes;
+    private string $id;
+    private BaseAttributes $attributes;
+    private BaseRelationships $relationships;
 
     public function __construct(
-        public string $attributesClass,
-        public readonly ?string $id,
-        array $attributes,
         public readonly string $type,
-    ) {
-        $this->populateAttributes($attributes);
+    ) {}
+
+    public function getId(): string
+    {
+        return $this->id;
     }
 
-    protected function populateAttributes(array $attributes): void
+    public function setId(string $id): void
     {
-        $this->attributes = new ($this->attributesClass)(
-            $attributes,
-        );
+        $this->id = $id;
     }
 
-    public function toArray(): array
+    public function getAttributes(): BaseAttributes
     {
-        $array = [];
+        return $this->attributes;
+    }
 
-        if ($this->id !== null) {
-            $array['id'] = $this->id;
+    public function setAttributes(array|BaseAttributes $attributes): void
+    {
+        if (is_array($attributes)) {
+            $attributes = new ($this->getAttributesClass())($attributes);
         }
 
-        $array['type'] = $this->type;
-        $array['attributes'] = $this->attributes->attributes;
-
-        return [
-            'data' => $array,
-        ];
+        $this->attributes = $attributes;
     }
 
-    public static function empty(array $attributes): static
+    public function getRelationships(): BaseRelationships
     {
-        return new static(
-            null,
-            $attributes,
-        );
+        return $this->relationships;
+    }
+
+    public function setRelationships(array|BaseRelationships $relationships): void
+    {
+        if (is_array($relationships)) {
+            $relationships = new ($this->getRelationshipsClass())($relationships);
+        }
+
+        $this->relationships = $relationships;
+    }
+
+    public function export(bool $forWriting = false): array
+    {
+        $toExport = [
+            'data' => [
+                'type' => $this->type,
+            ],
+        ];
+
+        if (isset($this->attributes)) {
+            $toExport['data']['attributes'] = $this->getAttributes()->export($forWriting);
+        }
+
+        if (isset($this->relationships)) {
+            if ($forWriting) {
+                foreach ($this->getRelationships()->export() as $name => $object) {
+                    $toExport['data']['attributes'][$name] = $object->export($forWriting);
+                }
+            } else {
+                foreach ($this->getRelationships()->export() as $name => $object) {
+                    $toExport['data']['relationships'][$name] = $object->export($forWriting);
+                }
+            }
+        }
+
+        if (isset($this->id)) {
+            $toExport['data']['id'] = $this->id;
+        }
+
+        return $toExport;
     }
 }

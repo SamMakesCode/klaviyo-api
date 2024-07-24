@@ -10,9 +10,9 @@ class ProfilesTest extends CustomTestCase
     {
         $number = rand(1000000, 9999999);
 
-        $profile = $this->klaviyoApi->profiles()->create([
+        $profile = $this->klaviyoApi->profiles()->create(Profile::make([
             'email' => $number . '@example.org',
-        ]);
+        ]));
 
         $this->assertInstanceOf(Profile::class, $profile);
     }
@@ -23,11 +23,8 @@ class ProfilesTest extends CustomTestCase
 
         $profile = $this->klaviyoApi->profiles()->get($id);
 
-        $this->expectException(\InvalidArgumentException::class);
-        echo $profile->attributes->someMadeUpPropertyThatDoesntExist;
-
         $this->assertInstanceOf(Profile::class, $profile);
-        $this->assertEquals($id, $profile->id);
+        $this->assertEquals($id, $profile->getId());
     }
 
     public function testCanListProfiles()
@@ -43,12 +40,14 @@ class ProfilesTest extends CustomTestCase
         $variableBit = str_pad($variableBit,9, '0', STR_PAD_LEFT);
         $phoneNumber = '+447' . $variableBit;
 
-        $profile = $this->klaviyoApi->profiles()->update('01HXYH0637H0EC6PGQGPKA09K9', [
+        $object = Profile::make([
             'phone_number' => $phoneNumber,
         ]);
+        $object->setId('01HXYH0637H0EC6PGQGPKA09K9');
+        $profile = $this->klaviyoApi->profiles()->update($object);
 
         $this->assertInstanceOf(Profile::class, $profile);
-        $this->assertEquals($phoneNumber, $profile->attributes->phone_number);
+        $this->assertEquals($phoneNumber, $profile->getAttributes()->get('phone_number'));
     }
 
     public function testCanCreateOrUpdate()
@@ -57,12 +56,14 @@ class ProfilesTest extends CustomTestCase
         $variableBit = str_pad($variableBit,9, '0', STR_PAD_LEFT);
         $phoneNumber = '+447' . $variableBit;
 
-        $profile = $this->klaviyoApi->profiles()->createOrUpdate([
-            'email' => 'samlitter57@gmail.com',
-            'phone_number' => $phoneNumber,
-        ]);
+        $profile = $this->klaviyoApi->profiles()->createOrUpdate(
+            Profile::make([
+                'email' => 'john@example.org',
+                'phone_number' => $phoneNumber,
+            ])
+        );
 
         $this->assertInstanceOf(Profile::class, $profile);
-        $this->assertEquals($phoneNumber, $profile->attributes->phone_number);
+        $this->assertEquals($phoneNumber, $profile->getAttributes()->get('phone_number'));
     }
 }

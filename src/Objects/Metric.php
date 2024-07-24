@@ -3,25 +3,31 @@
 namespace SamMakesCode\KlaviyoApi\Objects;
 
 use SamMakesCode\KlaviyoApi\Objects\Attributes\MetricAttributes;
+use SamMakesCode\KlaviyoApi\Objects\Relationships\MetricRelationships;
 
 class Metric extends BaseObject
 {
-    public function __construct(
-        ?string $id,
-        array $attributes
-    ) {
-        parent::__construct(
-            MetricAttributes::class,
-            $id,
-            $attributes,
-            'metric',
-        );
+    public function __construct()
+    {
+        parent::__construct('metric');
     }
 
-    public static function custom(string $name): static
+    public function getAttributesClass(): string
     {
-        return static::empty([
+        return MetricAttributes::class;
+    }
+
+    public function getRelationshipsClass(): string
+    {
+        return MetricRelationships::class;
+    }
+
+    public static function make(string $name): static
+    {
+        $metric = new static;
+        $metric->setAttributes([
             'name' => $name,
         ]);
+        return $metric;
     }
 }

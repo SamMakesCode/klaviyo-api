@@ -3,7 +3,11 @@
 namespace SamMakesCode\KlaviyoApi\Resources;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use SamMakesCode\KlaviyoApi\Exceptions\ObjectNotFound;
+use SamMakesCode\KlaviyoApi\Objects\BaseObject;
+use SamMakesCode\KlaviyoApi\Objects\Relationships\BaseRelationships;
 
 abstract class BaseResource
 {
@@ -11,26 +15,37 @@ abstract class BaseResource
         protected readonly Client $client,
         protected string $objectName,
         protected string $prefix,
-    ) {
-        if ($this->prefix === null) {
-            throw new \ValueError('Prefix on ' . static::class . ' cannot be null.');
-        }
-    }
+    ) {}
 
     public function list(): array
     {
+        $response = $this->client->get($this->prefix);
+
         return $this->populateObjects(
             $this->unpackResponse(
-                $this->client->get($this->prefix),
+                $response,
             ),
         );
     }
 
+    /**
+     * @throws ObjectNotFound
+     */
     public function get(string $id)
     {
+        try {
+            $response = $this->client->get($this->prefix . '/' . $id);
+        } catch (ClientException $clientException) {
+            if ($clientException->getResponse()->getStatusCode() === 404) {
+                throw new ObjectNotFound($this->prefix, $id, $clientException);
+            }
+
+            throw $clientException;
+        }
+
         return $this->populateObject(
             $this->unpackResponse(
-                $this->client->get($this->prefix . '/' . $id),
+                $response,
             ),
         );
     }
@@ -61,11 +76,27 @@ abstract class BaseResource
         return $objects;
     }
 
-    protected function populateObject(array $objectData)
+    protected function populateObject(array $objectData): BaseObject
     {
-        return new ($this->objectName)(
-            $objectData['id'],
-            $objectData['attributes'],
-        );
+        /** @var BaseObject $object */
+        $object = new ($this->objectName)();
+
+        $object->setId($objectData['id']);
+        $attributes = new ($object->getAttributesClass())($objectData['attributes']);
+
+        /** @var BaseRelationships $relationshipsClass */
+        $relationshipsClass = $object->getRelationshipsClass();
+        $relationshipsData = [];
+        foreach ($objectData['relationships'] as $name => $value) {
+            if (in_array($name, $relationshipsClass::validRelationships())) {
+                $relationshipsData[$name] = $value;
+            }
+        }
+
+        $relationships = new $relationshipsClass($relationshipsData);
+        $object->setAttributes($attributes);
+        $object->setRelationships($relationships);
+
+        return $object;
     }
 }

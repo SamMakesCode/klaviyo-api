@@ -28,13 +28,17 @@ We can send an event for an anonymous user like this.
     use \SamMakesCode\KlaviyoApi\Objects\Profile;
 
     $client = new KlaviyoApi('your-api-key');
-    $client->events()->create([
-        'properties' => [
-            'custom_property' => 'Why, yes!',
+    $client->events()->create(Event::make(
+        [
+            'properties' => [
+                'custom_property' => 'Why, yes!',
+            ],
         ],
-        'metric' => Metric::custom('Created Account')->toArray(),
-        'profile' => Profile::empty(['email' => 'john@example.org'])->toArray(),
-    ])
+        Metric::make('Created Account'),
+        Profile::make([
+            'email' => 'john@example.org',
+        ])
+    ));
 ```
 
 # Laravel

@@ -22,14 +22,9 @@ class ProfilesResource extends WritableResource
         );
     }
 
-    public function createOrUpdate(array $attributes)
+    public function createOrUpdate(BaseObject $object)
     {
-        /** @var BaseObject $object */
-        $object = $this->objectName;
-
-        $event = $object::empty($attributes);
-
-        $body = json_encode($event->toArray());
+        $body = json_encode($object->export(true));
 
         $objectData = $this->unpackResponse(
             $this->client->post('profile-import', [
